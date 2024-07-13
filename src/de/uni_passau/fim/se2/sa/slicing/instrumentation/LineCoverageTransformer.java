@@ -23,7 +23,10 @@ public class LineCoverageTransformer implements ClassFileTransformer {
     }
 
     // TODO Implement me
-    throw new UnsupportedOperationException("Implement me");
+    try {
+    } catch (Exception e) {
+    }
+    return pClassFileBuffer;
   }
 
   private boolean isIgnored(String pClassName) {

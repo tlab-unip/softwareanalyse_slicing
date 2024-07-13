@@ -5,6 +5,8 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 
+import de.uni_passau.fim.se2.sa.slicing.coverage.CoverageTracker;
+
 class InstrumentationAdapter extends ClassVisitor {
 
   InstrumentationAdapter(int pAPI, ClassWriter pClassWriter) {
@@ -19,7 +21,7 @@ class InstrumentationAdapter extends ClassVisitor {
       @Override
       public void visitLineNumber(int pLine, Label pStart) {
         // TODO Implement me
-        throw new UnsupportedOperationException("Implement me");
+        CoverageTracker.trackLineVisit(pLine);
       }
     };
   }

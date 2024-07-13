@@ -15,7 +15,8 @@ public abstract class Graph {
   protected final ClassNode classNode;
 
   protected Graph(ClassNode pClassNode, MethodNode pMethodNode) {
-    @Var ProgramGraph graph = null;
+    @Var
+    ProgramGraph graph = null;
     if (pClassNode == null) {
       // This should only happen under testing conditions.
       classNode = null;
@@ -51,9 +52,12 @@ public abstract class Graph {
   }
 
   /**
-   * Computes the graph transformation and returns a new {@link ProgramGraph} of the result.
+   * Computes the graph transformation and returns a new {@link ProgramGraph} of
+   * the result.
    *
-   * <p>This method needs to be implemented by the concrete analysis. It has to create a new {@link
+   * <p>
+   * This method needs to be implemented by the concrete analysis. It has to
+   * create a new {@link
    * ProgramGraph} object!
    *
    * @return A new {@link ProgramGraph} of the result.
@@ -63,13 +67,23 @@ public abstract class Graph {
   /**
    * Computes the reverse graph of the given graph.
    *
-   * <p>Creates a new {@link ProgramGraph} object.
+   * <p>
+   * Creates a new {@link ProgramGraph} object.
    *
    * @param pGraph The graph to reverse
    * @return The reverse graph
    */
   protected ProgramGraph reverseGraph(ProgramGraph pGraph) {
     // TODO Implement me
-    throw new UnsupportedOperationException("Implement me");
+    var reversedGraph = new ProgramGraph();
+    for (var node : cfg.getNodes()) {
+      reversedGraph.addNode(node);
+    }
+    for (var node : reversedGraph.getNodes()) {
+      for (var successor : cfg.getSuccessors(node)) {
+        cfg.addEdge(successor, node);
+      }
+    }
+    return reversedGraph;
   }
 }
