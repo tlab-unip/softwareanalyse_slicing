@@ -1,0 +1,45 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Calculator",
+      "request": "launch",
+      "mainClass": "de.uni_passau.fim.se2.sa.slicing.SlicerMain",
+      "projectName": "Static-and-Dynamic-Slicing",
+      "vmArgs": "-javaagent:./target/slicer.jar",
+      "args": [
+        "-c",
+        "de.uni_passau.fim.se2.sa.examples.Calculator",
+        "-m",
+        "evaluate:(Ljava/lang/String;)I",
+        "-v",
+        "sum",
+        "-l",
+        "8",
+        "-d",
+        "testEvaluateMultipleSummands"
+      ]
+    },
+    {
+      "type": "java",
+      "name": "GCD",
+      "request": "launch",
+      "mainClass": "de.uni_passau.fim.se2.sa.slicing.SlicerMain",
+      "projectName": "Static-and-Dynamic-Slicing",
+      "vmArgs": "-javaagent:./target/slicer.jar",
+      "args": [
+        "-c",
+        "de.uni_passau.fim.se2.sa.examples.GCD",
+        "-m",
+        "gcd:(II)I",
+        "-v",
+        "x",
+        "-l",
+        "9",
+        "-d",
+        "testGcd2"
+      ]
+    }
+  ]
+}
