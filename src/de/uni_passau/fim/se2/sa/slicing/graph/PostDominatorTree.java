@@ -5,6 +5,8 @@ import de.uni_passau.fim.se2.sa.slicing.cfg.ProgramGraph;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Set;
 
 import org.objectweb.asm.tree.ClassNode;
@@ -34,44 +36,54 @@ public class PostDominatorTree extends Graph {
     // TODO Implement me
 
     var graph = new ProgramGraph();
-    // records post-dominators of each node
-    var map = new LinkedHashMap<Node, Set<Node>>();
     var exit = getCFG().getExit().get();
+    // records post-dominators of each node
+    var dominators = new LinkedHashMap<Node, Set<Node>>();
+    dominators.put(exit, Set.of(exit));
     for (var node : getCFG().getNodes()) {
       graph.addNode(node);
-      if (node.equals(exit)) {
-        // the exit node is post-dominated only by itself
-        map.computeIfAbsent(node, k -> Set.of(k));
-      } else {
-        map.computeIfAbsent(node, k -> new LinkedHashSet<>(getCFG().getNodes()));
+      if (!node.equals(exit)) {
+        dominators.computeIfAbsent(node, k -> new LinkedHashSet<>(getCFG().getNodes()));
       }
     }
 
     // direct solution for finding post-dominators
-    boolean changed;
-    do {
+    boolean changed = true;
+    while (changed) {
       changed = false;
       for (var node : getCFG().getNodes()) {
         if (node.equals(exit)) {
           continue;
         }
-        var intersection = new LinkedHashSet<Node>(getCFG().getNodes());
+        var newDom = new LinkedHashSet<Node>(getCFG().getNodes());
         var successors = getCFG().getSuccessors(node);
-        successors.forEach(n -> intersection.retainAll(map.get(n)));
-        intersection.add(node);
-        if (!intersection.equals(map.get(node))) {
-          map.put(node, intersection);
+        successors.forEach(n -> newDom.retainAll(dominators.get(n)));
+        newDom.add(node);
+        if (!newDom.equals(dominators.get(node))) {
+          dominators.put(node, newDom);
           changed = true;
         }
       }
-    } while (changed);
+    }
 
-    // turn the map into a graph
-    for (var entry : map.entrySet()) {
-      for (var node : entry.getValue()) {
-        graph.addEdge(node, entry.getKey());
+    // strict dominators
+    for (var entry : dominators.entrySet()) {
+      entry.getValue().remove(entry.getKey());
+    }
+    var queue = new LinkedList<Node>();
+    while (!queue.isEmpty()) {
+      var current = queue.poll();
+      for (var node: getCFG().getNodes()) {
+        if (dominators.get(node).contains(current)) {
+          dominators.get(node).remove(current);
+          if (dominators.get(node).isEmpty()) {
+            graph.addEdge(current, node);
+            queue.add(node);
+          }
+        }
       }
     }
+
     return graph;
   }
 }
