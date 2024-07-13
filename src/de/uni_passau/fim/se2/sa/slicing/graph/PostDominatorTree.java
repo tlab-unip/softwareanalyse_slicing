@@ -36,13 +36,14 @@ public class PostDominatorTree extends Graph {
     var graph = new ProgramGraph();
     // records post-dominators of each node
     var map = new LinkedHashMap<Node, Set<Node>>();
+    var exit = getCFG().getExit().get();
     for (var node : getCFG().getNodes()) {
       graph.addNode(node);
-      if (getCFG().getSuccessors(node).size() != 0) {
-        map.computeIfAbsent(node, k -> new LinkedHashSet<>(getCFG().getNodes()));
-      } else {
-        // for the exit node
+      if (exit.equals(node)) {
+        // the exit node is post-dominated only by itself
         map.computeIfAbsent(node, k -> Set.of(k));
+      } else {
+        map.computeIfAbsent(node, k -> new LinkedHashSet<>(getCFG().getNodes()));
       }
     }
 
@@ -65,7 +66,7 @@ public class PostDominatorTree extends Graph {
     // turn the map into a graph
     for (var entry : map.entrySet()) {
       for (var node : entry.getValue()) {
-        graph.addEdge(entry.getKey(), node);
+        graph.addEdge(node, entry.getKey());
       }
     }
     return graph;
