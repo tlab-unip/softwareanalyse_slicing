@@ -39,7 +39,7 @@ public class PostDominatorTree extends Graph {
     var exit = getCFG().getExit().get();
     for (var node : getCFG().getNodes()) {
       graph.addNode(node);
-      if (exit.equals(node)) {
+      if (node.equals(exit)) {
         // the exit node is post-dominated only by itself
         map.computeIfAbsent(node, k -> Set.of(k));
       } else {
@@ -52,6 +52,9 @@ public class PostDominatorTree extends Graph {
     do {
       changed = false;
       for (var node : getCFG().getNodes()) {
+        if (node.equals(exit)) {
+          continue;
+        }
         var intersection = new LinkedHashSet<Node>(getCFG().getNodes());
         var successors = getCFG().getSuccessors(node);
         successors.forEach(n -> intersection.retainAll(map.get(n)));
@@ -64,9 +67,7 @@ public class PostDominatorTree extends Graph {
     } while (changed);
 
     // turn the map into a graph
-    for (
-
-    var entry : map.entrySet()) {
+    for (var entry : map.entrySet()) {
       for (var node : entry.getValue()) {
         graph.addEdge(node, entry.getKey());
       }
