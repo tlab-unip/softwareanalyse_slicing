@@ -48,24 +48,25 @@ public class PostDominatorTree extends Graph {
     }
 
     // direct solution for finding post-dominators
-    var wrapper = new Object() {
-      boolean changed;
-    };
+    boolean changed;
     do {
-      wrapper.changed = false;
+      changed = false;
       for (var node : getCFG().getNodes()) {
+        var intersection = new LinkedHashSet<Node>(getCFG().getNodes());
         var successors = getCFG().getSuccessors(node);
-        successors.forEach(n -> {
-          if (map.get(node).retainAll(map.get(n))) {
-            wrapper.changed = true;
-          }
-        });
-        map.get(node).add(node);
+        successors.forEach(n -> intersection.retainAll(map.get(n)));
+        intersection.add(node);
+        if (!intersection.equals(map.get(node))) {
+          map.put(node, intersection);
+          changed = true;
+        }
       }
-    } while (wrapper.changed);
+    } while (changed);
 
     // turn the map into a graph
-    for (var entry : map.entrySet()) {
+    for (
+
+    var entry : map.entrySet()) {
       for (var node : entry.getValue()) {
         graph.addEdge(node, entry.getKey());
       }
