@@ -69,6 +69,6 @@ public class ControlDependenceGraph extends Graph {
       }
     }
 
-    return graph;
+    return cdg;
   }
 }
