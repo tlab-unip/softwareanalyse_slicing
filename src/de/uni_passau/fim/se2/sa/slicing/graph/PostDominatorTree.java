@@ -60,6 +60,7 @@ public class PostDominatorTree extends Graph {
             wrapper.changed = true;
           }
         });
+        map.get(node).add(node);
       }
     } while (wrapper.changed);
 
