@@ -36,27 +36,29 @@ public class PostDominatorTree extends Graph {
     // TODO Implement me
 
     var graph = new ProgramGraph();
-    var exit = getCFG().getExit().get();
+    var rcfg = reverseGraph(cfg);
+    var entry = rcfg.getEntry().get();
     // records post-dominators of each node
     var dominators = new LinkedHashMap<Node, Set<Node>>();
-    dominators.put(exit, Set.of(exit));
-    for (var node : getCFG().getNodes()) {
+    dominators.put(entry, Set.of(entry));
+    for (var node : rcfg.getNodes()) {
       graph.addNode(node);
-      dominators.computeIfAbsent(node, k -> new LinkedHashSet<>(getCFG().getNodes()));
+      dominators.computeIfAbsent(node, k -> new LinkedHashSet<>(rcfg.getNodes()));
     }
 
     // direct solution for finding post-dominators
     boolean changed = true;
     while (changed) {
       changed = false;
-      for (var node : getCFG().getNodes()) {
-        if (node.equals(exit)) {
+      for (var node : rcfg.getNodes()) {
+        if (node.equals(entry)) {
           continue;
         }
         var curDom = dominators.get(node);
-        var newDom = new LinkedHashSet<Node>(getCFG().getNodes());
-        var successors = getCFG().getSuccessors(node);
-        successors.forEach(n -> newDom.retainAll(dominators.get(n)));
+        var newDom = new LinkedHashSet<Node>(rcfg.getNodes());
+
+        var predecessors = rcfg.getPredecessors(node);
+        predecessors.forEach(n -> newDom.retainAll(dominators.get(n)));
         newDom.add(node);
         if (curDom.size() != newDom.size() || !curDom.containsAll(newDom)) {
           dominators.put(node, newDom);
@@ -66,13 +68,13 @@ public class PostDominatorTree extends Graph {
     }
 
     // strict dominators
-    for (var entry : dominators.entrySet()) {
-      entry.getValue().remove(entry.getKey());
+    for (var item : dominators.entrySet()) {
+      item.getValue().remove(item.getKey());
     }
-    var queue = new LinkedList<Node>(List.of(exit));
+    var queue = new LinkedList<Node>(List.of(entry));
     while (!queue.isEmpty()) {
       var current = queue.poll();
-      for (var node : getCFG().getNodes()) {
+      for (var node : rcfg.getNodes()) {
         if (dominators.get(node).remove(current)) {
           if (dominators.get(node).isEmpty()) {
             graph.addEdge(current, node);
