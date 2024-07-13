@@ -54,7 +54,11 @@ public class PostDominatorTree extends Graph {
       wrapper.changed = false;
       for (var node : getCFG().getNodes()) {
         var successors = getCFG().getSuccessors(node);
-        successors.forEach(n -> wrapper.changed = map.get(node).retainAll(map.get(n)));
+        successors.forEach(n -> {
+          if (map.get(node).retainAll(map.get(n))) {
+            wrapper.changed = true;
+          }
+        });
       }
     } while (wrapper.changed);
 
