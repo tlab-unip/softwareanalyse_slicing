@@ -60,7 +60,7 @@ public class PostDominatorTree extends Graph {
         var predecessors = rcfg.getPredecessors(node);
         predecessors.forEach(n -> newDom.retainAll(dominators.get(n)));
         newDom.add(node);
-        if (curDom.size() != newDom.size() || !curDom.containsAll(newDom)) {
+        if (!curDom.equals(newDom)) {
           dominators.put(node, newDom);
           changed = true;
         }
@@ -69,12 +69,15 @@ public class PostDominatorTree extends Graph {
 
     // strict dominators
     dominators.forEach((k, v) -> v.remove(k));
+
     var queue = new LinkedList<Node>(List.of(entry));
     while (!queue.isEmpty()) {
       var current = queue.poll();
       for (var node : rcfg.getNodes()) {
-        if (dominators.get(node).remove(current)) {
-          if (dominators.get(node).isEmpty()) {
+        var dom = dominators.get(node);
+
+        if (dom.remove(current)) {
+          if (dom.isEmpty()) {
             graph.addEdge(current, node);
             queue.add(node);
           }
