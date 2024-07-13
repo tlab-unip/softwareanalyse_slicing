@@ -15,11 +15,11 @@ import org.objectweb.asm.tree.MethodNode;
 /** Provides an analysis computing a post-dominator tree for a CFG. */
 public class PostDominatorTree extends Graph {
 
-  PostDominatorTree(ClassNode pClassNode, MethodNode pMethodNode) {
+  public PostDominatorTree(ClassNode pClassNode, MethodNode pMethodNode) {
     super(pClassNode, pMethodNode);
   }
 
-  PostDominatorTree(ProgramGraph pCFG) {
+  public PostDominatorTree(ProgramGraph pCFG) {
     super(pCFG);
   }
 
@@ -40,7 +40,7 @@ public class PostDominatorTree extends Graph {
     var entry = rcfg.getEntry().get();
     // records post-dominators of each node
     var dominators = new LinkedHashMap<Node, Set<Node>>();
-    dominators.put(entry, Set.of(entry));
+    dominators.put(entry, new LinkedHashSet<>(Set.of(entry)));
     for (var node : rcfg.getNodes()) {
       graph.addNode(node);
       dominators.computeIfAbsent(node, k -> new LinkedHashSet<>(rcfg.getNodes()));
@@ -68,9 +68,7 @@ public class PostDominatorTree extends Graph {
     }
 
     // strict dominators
-    for (var item : dominators.entrySet()) {
-      item.getValue().remove(item.getKey());
-    }
+    dominators.forEach((k, v) -> v.remove(k));
     var queue = new LinkedList<Node>(List.of(entry));
     while (!queue.isEmpty()) {
       var current = queue.poll();
