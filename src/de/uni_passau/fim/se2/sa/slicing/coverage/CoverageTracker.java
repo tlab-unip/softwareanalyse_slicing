@@ -6,20 +6,16 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
- * Tracks line coverage information, i.e., which lines were executed and which
- * were not.
+ * Tracks line coverage information, i.e., which lines were executed and which were not.
  *
- * <p>
- * The tracker is designed to track coverage information for a single class and
- * a single
+ * <p>The tracker is designed to track coverage information for a single class and a single
  * execution. It can be used for dynamic slicing.
  */
 public final class CoverageTracker {
 
   private static final Set<Integer> visitedLines = new LinkedHashSet<>();
 
-  private CoverageTracker() {
-  }
+  private CoverageTracker() {}
 
   /**
    * Provides the set of visited lines (identified by their line numbers).
@@ -39,15 +35,13 @@ public final class CoverageTracker {
   @SuppressWarnings("unused")
   public static void trackLineVisit(int pLineNumber) {
     // TODO Implement me!
-    visitedLines.add(pLineNumber);
+    throw new UnsupportedOperationException("Implement me!");
   }
 
   /**
    * Resets coverage information.
    *
-   * <p>
-   * After calling this method, the set returned by {@link #getVisitedLines()}
-   * will be empty;
+   * <p>After calling this method, the set returned by {@link #getVisitedLines()} will be empty;
    * only intended for use during testing.
    */
   @VisibleForTesting
