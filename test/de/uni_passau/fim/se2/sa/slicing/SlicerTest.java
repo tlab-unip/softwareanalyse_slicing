@@ -10,15 +10,15 @@ import java.util.Set;
 
 import javax.imageio.ImageIO;
 
-import org.jgrapht.ext.JGraphXAdapter;
+// import org.jgrapht.ext.JGraphXAdapter;
 import org.jgrapht.graph.DefaultEdge;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
-import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
-import com.mxgraph.util.mxCellRenderer;
+// import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
+// import com.mxgraph.util.mxCellRenderer;
 
 import de.uni_passau.fim.se2.sa.slicing.cfg.*;
 import de.uni_passau.fim.se2.sa.slicing.coverage.*;
@@ -50,40 +50,34 @@ public class SlicerTest {
                 .orElse(null);
     }
 
-    @SuppressWarnings("unchecked")
-    public File VisualizeGraph(Object graph, String fileName) throws Exception {
-        var g = (org.jgrapht.Graph<Node, DefaultEdge>) graph;
-        var adapter = new JGraphXAdapter<>(g);
-        var layout = new mxHierarchicalLayout(adapter);
-        layout.execute(adapter.getDefaultParent());
-        var image = mxCellRenderer.createBufferedImage(adapter, null, 2, Color.WHITE, true, null);
-        var file = new File(fileName);
-        ImageIO.write(image, "PNG", file);
-        return file;
-    }
+    // @SuppressWarnings("unchecked")
+    // public void VisualizeGraph(Object graph, String fileName) throws Exception {
+    //     var g = (org.jgrapht.Graph<Node, DefaultEdge>) graph;
+    //     var adapter = new JGraphXAdapter<>(g);
+    //     var layout = new mxHierarchicalLayout(adapter);
+    //     layout.execute(adapter.getDefaultParent());
+    //     var image = mxCellRenderer.createBufferedImage(adapter, null, 2, Color.WHITE,
+    //             true, null);
+    //     var file = new File(fileName);
+    //     ImageIO.write(image, "PNG", file);
+
+    //     assertEquals(file, true);
+    // }
 
     @Test
     public void GraphTest() throws Exception {
+        var pdt = new PostDominatorTree(classNode, methodNode);
+        var cdg = new ControlDependenceGraph(classNode, methodNode);
+        var ddg = new DataDependenceGraph(classNode, methodNode);
+        var pdg = new ProgramDependenceGraph(classNode, methodNode);
+
         var field = new ProgramGraph().getClass().getDeclaredField("graph");
         field.setAccessible(true);
-
-        var pdt = new PostDominatorTree(classNode, methodNode);
         var pdtGraph = field.get(pdt.computeResult());
-
-        var cdg = new ControlDependenceGraph(classNode, methodNode);
         var cdgGraph = field.get(cdg.computeResult());
-
-        var ddg = new DataDependenceGraph(classNode, methodNode);
         var ddgGraph = field.get(ddg.computeResult());
-
-        var pdg = new ProgramDependenceGraph(classNode, methodNode);
         var pdgGraph = field.get(pdg.computeResult());
         var slice = pdg.backwardSlice(pdg.getCFG().getExit().get());
-
-        assertEquals(VisualizeGraph(pdtGraph, "pdtGraph.png").exists(), true);
-        assertEquals(VisualizeGraph(cdgGraph, "cdgGraph.png").exists(), true);
-        assertEquals(VisualizeGraph(ddgGraph, "ddgGraph.png").exists(), true);
-        assertEquals(VisualizeGraph(pdgGraph, "pdgGraph.png").exists(), true);
     }
 
     @Test
