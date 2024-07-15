@@ -4,6 +4,7 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 
 import de.uni_passau.fim.se2.sa.slicing.coverage.CoverageTracker;
 
@@ -21,7 +22,13 @@ class InstrumentationAdapter extends ClassVisitor {
       @Override
       public void visitLineNumber(int pLine, Label pStart) {
         // TODO Implement me
-        CoverageTracker.trackLineVisit(pLine);
+        super.visitLineNumber(pLine, pStart);
+        mv.visitVarInsn(Opcodes.ALOAD, pLine);
+        mv.visitMethodInsn(Opcodes.INVOKESTATIC,
+            CoverageTracker.class.getName(),
+            "trackLineVisit",
+            "(I)V",
+            false);
       }
     };
   }
