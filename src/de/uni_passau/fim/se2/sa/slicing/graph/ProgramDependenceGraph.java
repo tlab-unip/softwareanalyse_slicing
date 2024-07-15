@@ -80,9 +80,14 @@ public class ProgramDependenceGraph extends Graph implements Sliceable<Node> {
     boolean changed = true;
     while (changed) {
       changed = false;
+      var newSlice = new LinkedHashSet<>(slice);
       for (var node : slice) {
         var predecessors = pdg.getPredecessors(node);
-        changed = slice.addAll(predecessors);
+        newSlice.addAll(predecessors);
+      }
+      if (!slice.equals(newSlice)) {
+        slice = newSlice;
+        changed = true;
       }
     }
     return slice;

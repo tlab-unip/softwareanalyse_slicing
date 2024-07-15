@@ -79,7 +79,7 @@ public abstract class Graph {
     for (var node : cfg.getNodes()) {
       reversedGraph.addNode(node);
     }
-    for (var node : reversedGraph.getNodes()) {
+    for (var node : cfg.getNodes()) {
       for (var successor : cfg.getSuccessors(node)) {
         reversedGraph.addEdge(successor, node);
       }
