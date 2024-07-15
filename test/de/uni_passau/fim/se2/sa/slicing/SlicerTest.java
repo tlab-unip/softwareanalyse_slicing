@@ -52,16 +52,16 @@ public class SlicerTest {
 
     // @SuppressWarnings("unchecked")
     // public void VisualizeGraph(Object graph, String fileName) throws Exception {
-    //     var g = (org.jgrapht.Graph<Node, DefaultEdge>) graph;
-    //     var adapter = new JGraphXAdapter<>(g);
-    //     var layout = new mxHierarchicalLayout(adapter);
-    //     layout.execute(adapter.getDefaultParent());
-    //     var image = mxCellRenderer.createBufferedImage(adapter, null, 2, Color.WHITE,
-    //             true, null);
-    //     var file = new File(fileName);
-    //     ImageIO.write(image, "PNG", file);
+    // var g = (org.jgrapht.Graph<Node, DefaultEdge>) graph;
+    // var adapter = new JGraphXAdapter<>(g);
+    // var layout = new mxHierarchicalLayout(adapter);
+    // layout.execute(adapter.getDefaultParent());
+    // var image = mxCellRenderer.createBufferedImage(adapter, null, 2, Color.WHITE,
+    // true, null);
+    // var file = new File(fileName);
+    // ImageIO.write(image, "PNG", file);
 
-    //     assertEquals(file, true);
+    // assertEquals(file, true);
     // }
 
     @Test
@@ -90,6 +90,6 @@ public class SlicerTest {
     @Test
     public void InstrumentationTest() {
         var transformer = new LineCoverageTransformer(className);
-        transformer.transform(null, className, getClass(), null, null);
+        transformer.transform(null, className.replace('.', '/'), getClass(), null, null);
     }
 }

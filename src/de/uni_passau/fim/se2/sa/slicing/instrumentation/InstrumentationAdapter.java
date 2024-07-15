@@ -22,13 +22,13 @@ class InstrumentationAdapter extends ClassVisitor {
       @Override
       public void visitLineNumber(int pLine, Label pStart) {
         // TODO Implement me
-        super.visitLineNumber(pLine, pStart);
-        mv.visitVarInsn(Opcodes.ALOAD, pLine);
+        mv.visitVarInsn(Opcodes.LDC, pLine);
         mv.visitMethodInsn(Opcodes.INVOKESTATIC,
             CoverageTracker.class.getName(),
             "trackLineVisit",
             "(I)V",
             false);
+        super.visitLineNumber(pLine, pStart);
       }
     };
   }
