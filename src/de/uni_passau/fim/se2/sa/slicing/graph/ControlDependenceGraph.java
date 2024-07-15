@@ -61,17 +61,6 @@ public class ControlDependenceGraph extends Graph {
       }
     }
 
-    var entry = getCFG().getEntry().get();
-    for (var node : cdg.getNodes()) {
-      var predecessors = cdg.getPredecessors(node);
-      if (!node.equals(entry)
-          && (predecessors.isEmpty()
-              || (predecessors.size() == 1
-                  && predecessors.contains(node)))) {
-        cdg.addEdge(entry, node);
-      }
-    }
-
     return cdg;
   }
 }
