@@ -2,7 +2,9 @@ package de.uni_passau.fim.se2.sa.slicing.graph;
 
 import de.uni_passau.fim.se2.sa.slicing.cfg.*;
 
-import java.util.List;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.AbstractMap.SimpleEntry;
 
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -31,40 +33,41 @@ public class ControlDependenceGraph extends Graph {
   public ProgramGraph computeResult() {
     // TODO Implement me
     var cdg = new ProgramGraph();
-    var edges = new ProgramGraph();
     var pdt = new PostDominatorTree(getCFG()).computeResult();
     for (var node : getCFG().getNodes()) {
       cdg.addNode(node);
-      edges.addNode(node);
     }
 
+    // b is not ancestor of a in pdt
+    var edges = new LinkedHashSet<SimpleEntry<Node, Node>>();
     for (var node : getCFG().getNodes()) {
       for (var successor : getCFG().getSuccessors(node)) {
-        if (pdt.getLeastCommonAncestor(node, successor) != successor) {
-          edges.addEdge(node, successor);
+        // if not reachable
+        if (!pdt.getLeastCommonAncestor(node, successor).equals(successor)) {
+          edges.add(new SimpleEntry<>(node, successor));
         }
       }
     }
 
-    for (var node : edges.getNodes()) {
-      for (var successor : edges.getSuccessors(node)) {
-        var lca = pdt.getLeastCommonAncestor(node, successor);
-        var current = successor;
-        while (current != lca) {
-          cdg.addEdge(node, current);
-          current = pdt.getPredecessors(current).iterator().next();
-        }
-        if (node == lca) {
-          cdg.addEdge(node, lca);
-        }
+    for (var edge : edges) {
+      var lca = pdt.getLeastCommonAncestor(edge.getKey(), edge.getValue());
+      var current = edge.getValue();
+      while (!current.equals(lca)) {
+        cdg.addEdge(edge.getKey(), current);
+        current = new ArrayList<>(pdt.getPredecessors(current)).get(0);
+      }
+      if (edge.getKey().equals(lca)) {
+        cdg.addEdge(edge.getKey(), lca);
       }
     }
 
     var entry = getCFG().getEntry().get();
     for (var node : cdg.getNodes()) {
+      var predecessors = cdg.getPredecessors(node);
       if (!node.equals(entry)
-          && (cfg.getPredecessors(node).isEmpty()
-              || cfg.getPredecessors(node).equals(List.of(node)))) {
+          && (predecessors.isEmpty()
+              || (predecessors.size() == 1
+                  && predecessors.contains(node)))) {
         cdg.addEdge(entry, node);
       }
     }

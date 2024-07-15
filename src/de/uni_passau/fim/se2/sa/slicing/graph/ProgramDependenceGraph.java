@@ -3,7 +3,7 @@ package de.uni_passau.fim.se2.sa.slicing.graph;
 import de.uni_passau.fim.se2.sa.slicing.cfg.Node;
 import de.uni_passau.fim.se2.sa.slicing.cfg.ProgramGraph;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -75,15 +75,16 @@ public class ProgramDependenceGraph extends Graph implements Sliceable<Node> {
     if (pdg == null) {
       computeResult();
     }
-    var set = new HashSet<Node>(pdg.getPredecessors(pCriterion));
-    boolean changed;
-    do {
+
+    var slice = new LinkedHashSet<Node>(Set.of(pCriterion));
+    boolean changed = true;
+    while (changed) {
       changed = false;
-      for (var node : set) {
+      for (var node : slice) {
         var predecessors = pdg.getPredecessors(node);
-        changed = set.addAll(predecessors);
+        changed = slice.addAll(predecessors);
       }
-    } while (changed);
-    return set;
+    }
+    return slice;
   }
 }
