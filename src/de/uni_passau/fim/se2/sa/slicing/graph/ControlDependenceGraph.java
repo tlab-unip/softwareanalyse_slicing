@@ -31,23 +31,23 @@ public class ControlDependenceGraph extends Graph {
   public ProgramGraph computeResult() {
     // TODO Implement me
     var cdg = new ProgramGraph();
-    var graph = new ProgramGraph();
+    var edges = new ProgramGraph();
     var pdt = new PostDominatorTree(getCFG()).computeResult();
     for (var node : getCFG().getNodes()) {
       cdg.addNode(node);
-      graph.addNode(node);
+      edges.addNode(node);
     }
 
     for (var node : getCFG().getNodes()) {
       for (var successor : getCFG().getSuccessors(node)) {
         if (pdt.getLeastCommonAncestor(node, successor) != successor) {
-          graph.addEdge(node, successor);
+          edges.addEdge(node, successor);
         }
       }
     }
 
-    for (var node : graph.getNodes()) {
-      for (var successor : graph.getSuccessors(node)) {
+    for (var node : edges.getNodes()) {
+      for (var successor : edges.getSuccessors(node)) {
         var lca = pdt.getLeastCommonAncestor(node, successor);
         var current = successor;
         while (current != lca) {

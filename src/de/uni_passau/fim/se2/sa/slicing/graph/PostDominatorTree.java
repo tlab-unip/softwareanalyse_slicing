@@ -35,14 +35,14 @@ public class PostDominatorTree extends Graph {
   public ProgramGraph computeResult() {
     // TODO Implement me
 
-    var graph = new ProgramGraph();
+    var pdt = new ProgramGraph();
     var rcfg = reverseGraph(cfg);
     var entry = rcfg.getEntry().get();
     // records post-dominators of each node
     var dominators = new LinkedHashMap<Node, Set<Node>>();
     dominators.put(entry, new LinkedHashSet<>(Set.of(entry)));
     for (var node : rcfg.getNodes()) {
-      graph.addNode(node);
+      pdt.addNode(node);
       dominators.computeIfAbsent(node, k -> new LinkedHashSet<>(rcfg.getNodes()));
     }
 
@@ -78,13 +78,13 @@ public class PostDominatorTree extends Graph {
 
         if (dom.remove(current)) {
           if (dom.isEmpty()) {
-            graph.addEdge(current, node);
+            pdt.addEdge(current, node);
             queue.add(node);
           }
         }
       }
     }
 
-    return graph;
+    return pdt;
   }
 }
