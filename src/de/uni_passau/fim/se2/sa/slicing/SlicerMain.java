@@ -15,14 +15,18 @@ import de.uni_passau.fim.se2.sa.slicing.output.SourceLineExtractor;
 import de.uni_passau.fim.se2.sa.slicing.output.XMLFileExtractor;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
+
 import org.junit.platform.engine.discovery.DiscoverySelectors;
 import org.junit.platform.engine.discovery.MethodSelector;
+import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 import org.junit.platform.launcher.core.LauncherFactory;
+import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -39,7 +43,8 @@ import picocli.CommandLine.Spec;
 
 public final class SlicerMain implements Callable<Integer> {
 
-  @Spec CommandSpec spec;
+  @Spec
+  CommandSpec spec;
 
   private String className;
   private String methodName;
@@ -58,7 +63,8 @@ public final class SlicerMain implements Callable<Integer> {
     new CommandLine(new SlicerMain()).execute(pArgs);
   }
 
-  private SlicerMain() {}
+  private SlicerMain() {
+  }
 
   @Override
   public Integer call() throws Exception {
@@ -80,9 +86,8 @@ public final class SlicerMain implements Callable<Integer> {
 
     final Extractor extractor;
     if (sourceFilePath != null) {
-      extractor =
-          new SourceLineExtractor(
-              sourceFilePath, localVariableTables, className, methodNode, slice);
+      extractor = new SourceLineExtractor(
+          sourceFilePath, localVariableTables, className, methodNode, slice);
     } else if (xmlExtraction) {
       extractor = new XMLFileExtractor(slice);
     } else {
@@ -98,7 +103,12 @@ public final class SlicerMain implements Callable<Integer> {
 
   private void executeTest() {
     // TODO Implement execution of test method here
-    throw new UnsupportedOperationException("Execution of test method missing");
+    var testMethod = String.format("%sTest#%s", className, testCase);
+    var request = LauncherDiscoveryRequestBuilder.request()
+        .selectors(DiscoverySelectors.selectMethod(testMethod))
+        .build();
+    var launcher = LauncherFactory.create();
+    launcher.execute(request);
   }
 
   private Set<Node> executeSlicing() throws IOException {
@@ -111,21 +121,19 @@ public final class SlicerMain implements Callable<Integer> {
     classReader.accept(visitor, 0);
     localVariableTables = visitor.getLocalVariableTables();
 
-    methodNode =
-        classNode.methods.stream()
-            .filter(m -> methodName.equals(m.name) && methodDescriptor.equals(m.desc))
-            .findAny()
-            .orElse(null);
+    methodNode = classNode.methods.stream()
+        .filter(m -> methodName.equals(m.name) && methodDescriptor.equals(m.desc))
+        .findAny()
+        .orElse(null);
     Preconditions.checkNotNull(methodNode, "Could not find an appropriate method!");
 
     ProgramDependenceGraph pdg = new ProgramDependenceGraph(classNode, methodNode);
-    final Node programLocation =
-        getProgramLocation(
-            pdg.getCFG(),
-            methodNode,
-            localVariableTables.get(methodNode.name + ": " + methodNode.desc),
-            lineNumber,
-            variableName);
+    final Node programLocation = getProgramLocation(
+        pdg.getCFG(),
+        methodNode,
+        localVariableTables.get(methodNode.name + ": " + methodNode.desc),
+        lineNumber,
+        variableName);
 
     if (dynamicSlicing) {
       pdg = simplify(pdg);
@@ -136,7 +144,39 @@ public final class SlicerMain implements Callable<Integer> {
 
   private ProgramDependenceGraph simplify(final ProgramDependenceGraph pPDG) {
     // TODO Implement simplification of program-dependence graph for dynamic slicing
-    throw new UnsupportedOperationException("Simplification of PDG not implemented");
+    var reduced = new ProgramGraph();
+    var executedInsns = new HashSet<>();
+    var visitedLines = CoverageTracker.getVisitedLines();
+    for (var visitedLineNumber : visitedLines) {
+      for (var insnNode : methodNode.instructions) {
+        if (insnNode instanceof LineNumberNode lineNumberNode) {
+          if (lineNumberNode.line == visitedLineNumber) {
+            executedInsns.add(insnNode);
+            break;
+          }
+        }
+      }
+    }
+
+    for (var node : pPDG.getCFG().getNodes()) {
+      if (executedInsns.contains(node.getInstruction())) {
+        reduced.addNode(node);
+        for (var successor : pPDG.getCFG().getSuccessorsUntilNextLineNumber(node)) {
+          reduced.addNode(successor);
+        }
+      }
+    }
+
+    var pdg = pPDG.computeResult();
+    for (var node : reduced.getNodes()) {
+      for (var successor : pdg.getSuccessors(node)) {
+        if (reduced.getNodes().contains(successor)) {
+          reduced.addEdge(node, successor);
+        }
+      }
+    }
+
+    return new ProgramDependenceGraph(reduced);
   }
 
   private Node getProgramLocation(
@@ -169,9 +209,10 @@ public final class SlicerMain implements Callable<Integer> {
 
     for (final Node successor : pCFG.getSuccessorsUntilNextLineNumber(cfgNode)) {
       if ((successor.getInstruction() instanceof VarInsnNode
-              || successor.getInstruction() instanceof IincInsnNode)
+          || successor.getInstruction() instanceof IincInsnNode)
           && isStoreOpCode(successor.getInstruction().getOpcode())) {
-        // For a local variable search in the local variable table if we find a candidate
+        // For a local variable search in the local variable table if we find a
+        // candidate
         final int idx;
         if (successor.getInstruction() instanceof VarInsnNode varInsnNode) {
           idx = varInsnNode.var;
