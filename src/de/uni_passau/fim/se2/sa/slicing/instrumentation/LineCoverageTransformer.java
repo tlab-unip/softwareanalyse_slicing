@@ -35,8 +35,8 @@ public class LineCoverageTransformer implements ClassFileTransformer {
       reader.accept(visitor, 0);
       return writer.toByteArray();
     } catch (Exception e) {
+      return pClassFileBuffer;
     }
-    return pClassFileBuffer;
   }
 
   private boolean isIgnored(String pClassName) {

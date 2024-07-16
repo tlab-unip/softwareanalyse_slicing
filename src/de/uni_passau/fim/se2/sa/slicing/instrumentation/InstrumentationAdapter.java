@@ -24,7 +24,7 @@ class InstrumentationAdapter extends ClassVisitor {
         // TODO Implement me
         mv.visitVarInsn(Opcodes.LDC, pLine);
         mv.visitMethodInsn(Opcodes.INVOKESTATIC,
-            CoverageTracker.class.getName(),
+            CoverageTracker.class.getName().replace('.', '/'),
             "trackLineVisit",
             "(I)V",
             false);
