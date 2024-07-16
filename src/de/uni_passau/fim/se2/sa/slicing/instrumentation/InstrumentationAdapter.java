@@ -22,7 +22,7 @@ class InstrumentationAdapter extends ClassVisitor {
       @Override
       public void visitLineNumber(int pLine, Label pStart) {
         // TODO Implement me
-        mv.visitVarInsn(Opcodes.LDC, pLine);
+        mv.visitLdcInsn(pLine);
         mv.visitMethodInsn(Opcodes.INVOKESTATIC,
             CoverageTracker.class.getName().replace('.', '/'),
             "trackLineVisit",
